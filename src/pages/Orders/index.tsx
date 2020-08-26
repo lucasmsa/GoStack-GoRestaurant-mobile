@@ -1,7 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { Image } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { Extra } from '../FoodDetails/index';
 
 import api from '../../services/api';
+
 import formatValue from '../../utils/formatValue';
 
 import {
@@ -27,16 +30,44 @@ interface Food {
   thumbnail_url: string;
 }
 
+interface SpecificOrder {
+  id: number;
+  product_id: number;
+  name: string;
+  description: string;
+  category: number;
+  quantity: number;
+  price: number;
+  thumbnail_url: string;
+  extras: Extra[];
+}
+
 const Orders: React.FC = () => {
+  const navigation = useNavigation();
   const [orders, setOrders] = useState<Food[]>([]);
+  const [specificOrder, setSpecificOrders] = useState<SpecificOrder[]>([]);
 
   useEffect(() => {
     async function loadOrders(): Promise<void> {
-      // Load orders from API
+      await api.get('orders').then(response => {
+        setOrders(response.data);
+        setSpecificOrders(response.data);
+      });
     }
 
     loadOrders();
   }, []);
+
+  const handleNavigateToSpecificOrder = useCallback(
+    (id: number): void => {
+      console.log(id);
+      const orderClicked = specificOrder.find(order => order.id === id);
+
+      orderClicked &&
+        navigation.navigate('SpecificOrder', { order: orderClicked });
+    },
+    [navigation, specificOrder],
+  );
 
   return (
     <Container>
@@ -49,7 +80,11 @@ const Orders: React.FC = () => {
           data={orders}
           keyExtractor={item => String(item.id)}
           renderItem={({ item }) => (
-            <Food key={item.id} activeOpacity={0.6}>
+            <Food
+              key={item.id}
+              activeOpacity={0.6}
+              onPress={() => handleNavigateToSpecificOrder(item.id)}
+            >
               <FoodImageContainer>
                 <Image
                   style={{ width: 88, height: 88 }}
@@ -59,7 +94,7 @@ const Orders: React.FC = () => {
               <FoodContent>
                 <FoodTitle>{item.name}</FoodTitle>
                 <FoodDescription>{item.description}</FoodDescription>
-                <FoodPricing>{item.formattedPrice}</FoodPricing>
+                <FoodPricing>{formatValue(item.price)}</FoodPricing>
               </FoodContent>
             </Food>
           )}

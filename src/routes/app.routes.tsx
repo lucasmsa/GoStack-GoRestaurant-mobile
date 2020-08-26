@@ -8,6 +8,7 @@ import TabRoutes from './tab.routes';
 
 import Home from '../pages/Home';
 import FoodDetails from '../pages/FoodDetails';
+import SpecificOrder from '../pages/SpecificOrder';
 
 const App = createStackNavigator();
 
@@ -25,6 +26,14 @@ const AppRoutes: React.FC = () => (
       <App.Screen
         name="MainBottom"
         component={TabRoutes}
+        options={{
+          headerShown: false,
+          gestureEnabled: false,
+        }}
+      />
+      <App.Screen
+        name="SpecificOrder"
+        component={SpecificOrder}
         options={{
           headerShown: false,
           gestureEnabled: false,
